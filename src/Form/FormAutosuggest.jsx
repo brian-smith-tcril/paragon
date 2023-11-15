@@ -113,7 +113,7 @@ function FormAutosuggest({
     <IconButton
       className="pgn__form-autosuggest__icon-button"
       data-testid="autosuggest-iconbutton"
-      tabindex="-1"
+      tabIndex="-1"
       src={isMenuClosed ? KeyboardArrowDown : KeyboardArrowUp}
       iconAs={Icon}
       size="sm"
