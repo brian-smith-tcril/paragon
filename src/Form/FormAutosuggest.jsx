@@ -14,6 +14,7 @@ import Spinner from '../Spinner';
 import useArrowKeyNavigation from '../hooks/useArrowKeyNavigation';
 import messages from './messages';
 import { filter } from 'lodash';
+import { match } from 'assert';
 
 function FormAutosuggest({
   children,
@@ -205,6 +206,8 @@ function FormAutosuggest({
 
     if (!userProvidedText.length) {
       setDropdownItems([]);
+      setHasValue(false);
+      setHasSelection(false);
       setIsMenuClosed(true);
       if (onChange) {
         onChange({
@@ -216,15 +219,35 @@ function FormAutosuggest({
       return;
     }
 
+    setHasValue(true);
+
     const filteredItems = getItems(userProvidedText);
     setDropdownItems(filteredItems);
-    setIsMenuClosed(false);
+    setIsMenuClosed(false);    
 
-    const matchingDropdownItem = filteredItems.find((o) => o.toLowerCase() === userProvidedText.toLowerCase());
+    const matchingDropdownItem = filteredItems.find((o) => o.props.children.toLowerCase() === userProvidedText.toLowerCase());
+    if (!matchingDropdownItem) {
+      setHasSelection(false);
+      if (onChange) {
+        onChange({
+          userProvidedText: userProvidedText,
+          selectionValue: '',
+          selectionId: ''
+        });
+      }
+      return;
+    }
 
-    setDisplayValue(matchingDropdownOption || userProvidedText);
-    
+    setHasSelection(true);
 
+    setDisplayValue(matchingDropdownItem.props.children);
+    if (onChange) {
+      onChange({
+        userProvidedText: userProvidedText,
+        selectionValue: matchingDropdownItem.props.children,
+        selectionId: matchingDropdownItem.props.id
+      });
+    }
   };
 
   const { getControlProps } = useFormGroupContext();
