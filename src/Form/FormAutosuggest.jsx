@@ -215,7 +215,7 @@ function FormAutosuggest({
     }
   };
 
-  const handleOnChange = (e) => {
+  const handleTextInput = (e) => {
     const findStr = e.target.value;
 
     if (onChange) { onChange(findStr); }
@@ -263,7 +263,7 @@ function FormAutosuggest({
           value={state.displayValue}
           aria-invalid={state.errorMessage}
           aria-activedescendant={activeMenuItemId}
-          onChange={handleOnChange}
+          onChange={handleTextInput}
           onClick={handleClick}
           trailingElement={iconToggle}
           data-testid="autosuggest-textbox-input"
