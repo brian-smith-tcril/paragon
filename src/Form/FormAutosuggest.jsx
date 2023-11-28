@@ -21,9 +21,10 @@ function FormAutosuggest({
   screenReaderText,
   value,
   isLoading,
-  errorMessageText,
+  valueRequiredErrorMessageText,
+  selectionRequiredErrorMessageText,
+  customErrorMessageText,
   onChange,
-  onSelected,
   helpMessage,
   ...props
 }) {
@@ -35,11 +36,10 @@ function FormAutosuggest({
   });
   const [isMenuClosed, setIsMenuClosed] = useState(true);
   const [isActive, setIsActive] = useState(false);
-  const [state, setState] = useState({
-    displayValue: value || '',
-    errorMessage: '',
-    dropDownItems: [],
-  });
+  const [hasValue, setHasValue] = useState(false);
+  const [hasSelection, setHasSelection] = useState(false);
+  const [displayValue, setDisplayValue] = useState(value || '');
+  const [dropdownItems, setDropdownItems] = useState([]);
   const [activeMenuItemId, setActiveMenuItemId] = useState(null);
 
   const handleMenuItemFocus = (menuItemId) => {
@@ -48,7 +48,9 @@ function FormAutosuggest({
 
   const handleItemClick = (e, onClick) => {
     const clickedValue = e.currentTarget.getAttribute('data-value');
+    const clickedId = e.currentTarget.id;
 
+    debugger;
     if (onSelected && clickedValue !== value) {
       onSelected(clickedValue);
     }
@@ -182,7 +184,7 @@ function FormAutosuggest({
     }
   }, [value]);
 
-  const setDisplayValue = (itemValue) => {
+  const updateDisplayValue = (itemValue) => {
     const optValue = [];
 
     children.forEach(opt => {
@@ -236,7 +238,7 @@ function FormAutosuggest({
       setIsMenuClosed(true);
     }
 
-    setDisplayValue(e.target.value);
+    updateDisplayValue(e.target.value);
   };
 
   const { getControlProps } = useFormGroupContext();
@@ -312,7 +314,9 @@ FormAutosuggest.defaultProps = {
   helpMessage: '',
   placeholder: '',
   value: null,
-  errorMessageText: null,
+  valueRequiredErrorMessageText: null,
+  selectionRequiredErrorMessageText: null,
+  customErrorMessageText: null,
   readOnly: false,
   children: null,
   name: 'form-autosuggest',
@@ -341,8 +345,12 @@ FormAutosuggest.propTypes = {
   placeholder: PropTypes.string,
   /** Specifies values for the input. */
   value: PropTypes.string,
-  /** Informs user has errors. */
-  errorMessageText: PropTypes.string,
+  /** Informs user they must input a value. */
+  valueRequiredErrorMessageText: PropTypes.string,
+  /** Informs user they must make a selection. */
+  selectionRequiredErrorMessageText: PropTypes.string,
+  /** Informs user of other errors. */
+  customErrorMessageText: PropTypes.string,
   /** Specifies the name of the base input element. */
   name: PropTypes.string,
   /** Selected list item is read-only. */
@@ -351,8 +359,6 @@ FormAutosuggest.propTypes = {
   children: PropTypes.node,
   /** Specifies the screen reader text */
   screenReaderText: PropTypes.string,
-  /** Function that receives the selected value. */
-  onSelected: PropTypes.func,
 };
 
 export default FormAutosuggest;
