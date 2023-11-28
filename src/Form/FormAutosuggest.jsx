@@ -73,7 +73,7 @@ function FormAutosuggest({
     let childrenOpt = React.Children.map(children, (child) => {
       // eslint-disable-next-line no-shadow
       const { children, onClick, ...rest } = child.props;
-      const menuItemId = uuidv4();
+      const menuItemId = child.props.id ?? uuidv4();
 
       return React.cloneElement(child, {
         ...rest,
