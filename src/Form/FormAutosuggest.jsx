@@ -217,6 +217,12 @@ function FormAutosuggest({
 
     setDisplayValue(matchingDropdownOption || userProvidedText);
     
+    if (onChange) {
+      onChange({
+        userProvidedText: userProvidedText,
+        selectionValue: 
+      });
+    }
   };
 
   const { getControlProps } = useFormGroupContext();
