@@ -203,26 +203,28 @@ function FormAutosuggest({
   const handleTextInput = (e) => {
     const userProvidedText = e.target.value;
 
-    if (userProvidedText.length) {
-      const filteredItems = getItems(userProvidedText);
-      setDropdownItems(filteredItems);
-      setIsMenuClosed(false);
-    } else {
+    if (!userProvidedText.length) {
       setDropdownItems([]);
       setIsMenuClosed(true);
+      if (onChange) {
+        onChange({
+          userProvidedText: '',
+          selectionValue: '',
+          selectionId: ''
+        });
+      }
+      return;
     }
 
-    const dropdownOptions = children.map(opt => opt.props.children);
-    const matchingDropdownOption = dropdownOptions.find((o) => o.toLowerCase() === userProvidedText.toLowerCase());
+    const filteredItems = getItems(userProvidedText);
+    setDropdownItems(filteredItems);
+    setIsMenuClosed(false);
+
+    const matchingDropdownItem = filteredItems.find((o) => o.toLowerCase() === userProvidedText.toLowerCase());
 
     setDisplayValue(matchingDropdownOption || userProvidedText);
     
-    if (onChange) {
-      onChange({
-        userProvidedText: userProvidedText,
-        selectionValue: 
-      });
-    }
+
   };
 
   const { getControlProps } = useFormGroupContext();
