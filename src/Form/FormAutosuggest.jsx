@@ -185,22 +185,6 @@ function FormAutosuggest({
     }
   }, [value]);
 
-  const updateDisplayValue = (itemValue) => {
-    const optValue = [];
-
-    children.forEach(opt => {
-      optValue.push(opt.props.children);
-    });
-
-    const normalized = itemValue.toLowerCase();
-    const opt = optValue.find((o) => o.toLowerCase() === normalized);
-
-    setState(prevState => ({
-      ...prevState,
-      displayValue: opt || itemValue,
-    }));
-  };
-
   const handleClick = (e) => {
     setIsActive(true);
     const dropDownItems = getItems(e.target.value);
@@ -228,9 +212,11 @@ function FormAutosuggest({
       setIsMenuClosed(true);
     }
 
-    
+    const dropdownOptions = children.map(opt => opt.props.children);
+    const matchingDropdownOption = dropdownOptions.find((o) => o.toLowerCase() === userProvidedText.toLowerCase());
 
-    updateDisplayValue(e.target.value);
+    setDisplayValue(matchingDropdownOption || userProvidedText);
+    
   };
 
   const { getControlProps } = useFormGroupContext();
