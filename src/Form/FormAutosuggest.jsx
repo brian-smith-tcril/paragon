@@ -13,6 +13,7 @@ import IconButton from '../IconButton';
 import Spinner from '../Spinner';
 import useArrowKeyNavigation from '../hooks/useArrowKeyNavigation';
 import messages from './messages';
+import { filter } from 'lodash';
 
 function FormAutosuggest({
   children,
@@ -216,27 +217,18 @@ function FormAutosuggest({
   };
 
   const handleTextInput = (e) => {
-    const findStr = e.target.value;
+    const userProvidedText = e.target.value;
 
-    if (onChange) { onChange(findStr); }
-
-    if (findStr.length) {
-      const filteredItems = getItems(findStr);
-      setState(prevState => ({
-        ...prevState,
-        dropDownItems: filteredItems,
-        errorMessage: '',
-      }));
-
+    if (userProvidedText.length) {
+      const filteredItems = getItems(userProvidedText);
+      setDropdownItems(filteredItems);
       setIsMenuClosed(false);
     } else {
-      setState(prevState => ({
-        ...prevState,
-        dropDownItems: [],
-      }));
-
+      setDropdownItems([]);
       setIsMenuClosed(true);
     }
+
+    
 
     updateDisplayValue(e.target.value);
   };
