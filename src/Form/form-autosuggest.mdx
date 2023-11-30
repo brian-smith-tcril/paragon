@@ -29,7 +29,8 @@ Form auto-suggest enables users to manually select or type to find matching opti
             <Form.Autosuggest
                 aria-label="form autosuggest"
                 helpMessage="Select language"
-                errorMessageText="Error, no selected value"
+                selectionRequired
+                selectionRequiredErrorMessageText="Error, no selected value"
                 value={selected}
                 onSelected={(value) => setSelected(value)}
             >
