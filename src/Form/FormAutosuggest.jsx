@@ -14,7 +14,7 @@ import Spinner from '../Spinner';
 import useArrowKeyNavigation from '../hooks/useArrowKeyNavigation';
 import messages from './messages';
 import { filter } from 'lodash';
-import { match } from 'assert';
+// import { match } from 'assert';
 
 function FormAutosuggest({
   children,
@@ -23,8 +23,12 @@ function FormAutosuggest({
   screenReaderText,
   value,
   isLoading,
+  valueRequired,
   valueRequiredErrorMessageText,
+  selectionRequired,
   selectionRequiredErrorMessageText,
+  customInvalid,
+  customError,
   customErrorMessageText,
   onChange,
   helpMessage,
@@ -130,15 +134,15 @@ function FormAutosuggest({
   );
 
   const leaveControl = () => {
-    setIsActive(false);
+    // setIsActive(false);
 
-    setState(prevState => ({
-      ...prevState,
-      dropDownItems: [],
-      errorMessage: !state.displayValue ? errorMessageText : '',
-    }));
+    // setState(prevState => ({
+    //   ...prevState,
+    //   dropDownItems: [],
+    //   errorMessage: !state.displayValue ? errorMessageText : '',
+    // }));
 
-    setIsMenuClosed(true);
+    // setIsMenuClosed(true);
   };
 
   const handleDocumentClick = (e) => {
@@ -179,26 +183,23 @@ function FormAutosuggest({
 
   useEffect(() => {
     if (value || value === '') {
-      setState(prevState => ({
-        ...prevState,
-        displayValue: value,
-      }));
+      setDisplayValue(value);
     }
   }, [value]);
 
   const handleClick = (e) => {
-    setIsActive(true);
-    const dropDownItems = getItems(e.target.value);
+    // setIsActive(true);
+    // const dropDownItems = getItems(e.target.value);
 
-    if (dropDownItems.length > 1) {
-      setState(prevState => ({
-        ...prevState,
-        dropDownItems,
-        errorMessage: '',
-      }));
+    // if (dropDownItems.length > 1) {
+    //   setState(prevState => ({
+    //     ...prevState,
+    //     dropDownItems,
+    //     errorMessage: '',
+    //   }));
 
-      setIsMenuClosed(false);
-    }
+    //   setIsMenuClosed(false);
+    // }
   };
 
   const handleTextInput = (e) => {
@@ -250,27 +251,59 @@ function FormAutosuggest({
     }
   };
 
+  const isInvalid = () => {
+    if (customError) {
+      return true;
+    }
+
+    if (valueRequired && !hasValue) {
+      return true;
+    }
+
+    if (selectionRequired && !hasSelection) {
+      return true;
+    }
+
+    return false;
+  }
+
+  const errorMessage = () => {
+    if (customError) {
+      return customErrorMessageText;
+    }
+
+    if (valueRequired && !hasValue) {
+      return valueRequiredErrorMessageText;
+    }
+
+    if (selectionRequired && !hasSelection) {
+      return selectionRequiredErrorMessageText;
+    }
+
+    return '';
+  }
+
   const { getControlProps } = useFormGroupContext();
   const controlProps = getControlProps(props);
 
   return (
     <div className="pgn__form-autosuggest__wrapper" ref={parentRef}>
       <div aria-live="assertive" className="sr-only" data-testid="autosuggest-screen-reader-options-count">
-        {`${state.dropDownItems.length} options found`}
+        {`${dropdownItems.length} options found`}
       </div>
       <FormGroupContextProvider
         controlId={controlProps.id}
-        isInvalid={!!state.errorMessage}
+        isInvalid={isInvalid()}
       >
         <FormControl
           ref={formControlRef}
-          aria-expanded={(state.dropDownItems.length > 0).toString()}
+          aria-expanded={(dropdownItems.length > 0).toString()}
           aria-owns="pgn__form-autosuggest__dropdown-box"
           role="combobox"
           aria-autocomplete="list"
           autoComplete="off"
-          value={state.displayValue}
-          aria-invalid={state.errorMessage}
+          value={displayValue}
+          aria-invalid={errorMessage()}
           aria-activedescendant={activeMenuItemId}
           onChange={handleTextInput}
           onClick={handleClick}
@@ -279,15 +312,15 @@ function FormAutosuggest({
           {...controlProps}
         />
 
-        {helpMessage && !state.errorMessage && (
+        {helpMessage && !isInvalid() && (
           <FormControlFeedback type="default">
             {helpMessage}
           </FormControlFeedback>
         )}
 
-        {state.errorMessage && (
+        {isInvalid() && (
           <FormControlFeedback type="invalid" feedback-for={controlProps.name}>
-            {errorMessageText}
+            {errorMessage()}
           </FormControlFeedback>
         )}
       </FormGroupContextProvider>
@@ -306,7 +339,7 @@ function FormAutosuggest({
               data-testid="autosuggest-loading-spinner"
             />
           </div>
-        ) : state.dropDownItems.length > 0 && state.dropDownItems}
+        ) : dropdownItems.length > 0 && dropdownItems}
       </ul>
     </div>
   );
@@ -323,7 +356,9 @@ FormAutosuggest.defaultProps = {
   helpMessage: '',
   placeholder: '',
   value: null,
+  valueRequired: false,
   valueRequiredErrorMessageText: null,
+  selectionRequired: false,
   selectionRequiredErrorMessageText: null,
   customErrorMessageText: null,
   readOnly: false,
@@ -354,10 +389,16 @@ FormAutosuggest.propTypes = {
   placeholder: PropTypes.string,
   /** Specifies values for the input. */
   value: PropTypes.string,
+  /** Specifies if empty values trigger an error state */
+  valueRequired: PropTypes.bool,
   /** Informs user they must input a value. */
   valueRequiredErrorMessageText: PropTypes.string,
+  /** Specifies if freeform values trigger an error state */
+  selectionRequired: PropTypes.bool,  
   /** Informs user they must make a selection. */
   selectionRequiredErrorMessageText: PropTypes.string,
+  /** Specifies the control is in a consumer provided error state */
+  customError: PropTypes.bool,  
   /** Informs user of other errors. */
   customErrorMessageText: PropTypes.string,
   /** Specifies the name of the base input element. */
