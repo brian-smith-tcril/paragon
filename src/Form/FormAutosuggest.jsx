@@ -14,7 +14,33 @@ import Spinner from '../Spinner';
 import useArrowKeyNavigation from '../hooks/useArrowKeyNavigation';
 import messages from './messages';
 import { filter } from 'lodash';
+import { expand } from 'rxjs';
 // import { match } from 'assert';
+
+function FormAutosuggestDropdown({
+  isLoading,
+  dropdownItems,
+  loadingSpinnerScreenReaderText,
+}) {
+  return (
+    <ul
+    id="pgn__form-autosuggest__dropdown-box"
+    className="pgn__form-autosuggest__dropdown"
+    role="listbox"
+  >
+    {isLoading ? (
+      <div className="pgn__form-autosuggest__dropdown-loading">
+        <Spinner
+          animation="border"
+          variant="dark"
+          screenReaderText={loadingSpinnerScreenReaderText}
+          data-testid="autosuggest-loading-spinner"
+        />
+      </div>
+    ) : dropdownItems.length > 0 && dropdownItems}
+  </ul>
+  )
+}
 
 function FormAutosuggest({
   children,
@@ -40,7 +66,18 @@ function FormAutosuggest({
     selectors: arrowKeyNavigationSelector,
     ignoredKeys: ignoredArrowKeysNames,
   });
-  const [isMenuClosed, setIsMenuClosed] = useState(true);
+  // const [state, setState] = useState({
+  //   dropdownExpanded: false,
+  //   isActive: false,
+  //   hasValue: false,
+  //   hasSelection: false,
+  //   displayValue: value || '',
+  //   dropdownItems: [],
+  //   activeMenuItemId: null,
+  //   isValid: true,
+  //   errorMessage: '',
+  // });
+  const [dropdownExpanded, setDropdownExpanded] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [hasValue, setHasValue] = useState(false);
   const [hasSelection, setHasSelection] = useState(false);
@@ -70,7 +107,7 @@ function FormAutosuggest({
       onSelected(clickedValue);
     }
 
-    setIsMenuClosed(true);
+    setDropdownExpanded(false);
 
     if (onClick) {
       onClick(e);
@@ -101,23 +138,21 @@ function FormAutosuggest({
     return childrenOpt;
   }
 
-  const handleExpand = () => {
-    setIsMenuClosed(!isMenuClosed);
+  const collapseDropdown = () => {
+    setDropdownItems([]);
+    setDropdownExpanded(false);
+  }
 
-    const newState = {
-      dropDownItems: [],
-    };
+  const expandDropdown = () => {
+    setIsActive(true);
+    setDropdownItems(getItems(displayValue));
+    setIsValid(true);
+    setErrorMessage('');
+    setDropdownExpanded(true);
+  }
 
-    if (isMenuClosed) {
-      setIsActive(true);
-      newState.dropDownItems = getItems(state.displayValue);
-      newState.errorMessage = '';
-    }
-
-    setState(prevState => ({
-      ...prevState,
-      ...newState,
-    }));
+  const toggleDropdown = () => {
+    dropdownExpanded ? collapseDropdown() : expandDropdown();
   };
 
   const iconToggle = (
@@ -125,14 +160,14 @@ function FormAutosuggest({
       className="pgn__form-autosuggest__icon-button"
       data-testid="autosuggest-iconbutton"
       tabindex="-1"
-      src={isMenuClosed ? KeyboardArrowDown : KeyboardArrowUp}
+      src={dropdownExpanded ? KeyboardArrowUp : KeyboardArrowDown}
       iconAs={Icon}
       size="sm"
       variant="secondary"
-      alt={isMenuClosed
-        ? intl.formatMessage(messages.iconButtonOpened)
-        : intl.formatMessage(messages.iconButtonClosed)}
-      onClick={(e) => handleExpand(e, isMenuClosed)}
+      alt={dropdownExpanded
+        ? intl.formatMessage(messages.iconButtonClosed)
+        : intl.formatMessage(messages.iconButtonOpened)}
+      onClick={toggleDropdown}
     />
   );
 
@@ -143,7 +178,7 @@ function FormAutosuggest({
   const leaveControl = () => {
     console.log('onBlur');
     setIsActive(false);
-    setIsMenuClosed(true);
+    collapseDropdown();
     updateErrorStateAndErrorMessage();
     
 
@@ -169,7 +204,7 @@ function FormAutosuggest({
         dropDownItems: [],
       }));
 
-      setIsMenuClosed(true);
+      collapseDropdown();
     }
     if (e.key === 'Tab' && isActive) {
       leaveControl();
@@ -185,34 +220,25 @@ function FormAutosuggest({
   });
 
   useEffect(() => {
+    // debugger;
     if (value || value === '') {
       setDisplayValue(value);
     }
   }, [value]);
 
-  const handleClick = (e) => {
-    // setIsActive(true);
-    // const dropDownItems = getItems(e.target.value);
-
-    // if (dropDownItems.length > 1) {
-    //   setState(prevState => ({
-    //     ...prevState,
-    //     dropDownItems,
-    //     errorMessage: '',
-    //   }));
-
-    //   setIsMenuClosed(false);
-    // }
+  const handleTextboxClick = (e) => {
+    expandDropdown();
   };
 
   const handleTextInput = (e) => {
     const userProvidedText = e.target.value;
 
     if (!userProvidedText.length) {
+      setDisplayValue('');
       setDropdownItems([]);
       setHasValue(false);
       setHasSelection(false);
-      setIsMenuClosed(true);
+      collapseDropdown();
       if (onChange) {
         onChange({
           userProvidedText: '',
@@ -226,12 +252,14 @@ function FormAutosuggest({
     setHasValue(true);
 
     const filteredItems = getItems(userProvidedText);
+    debugger;
     setDropdownItems(filteredItems);
-    setIsMenuClosed(false);    
+    expandDropdown();    
 
     const matchingDropdownItem = filteredItems.find((o) => o.props.children.toLowerCase() === userProvidedText.toLowerCase());
     if (!matchingDropdownItem) {
       setHasSelection(false);
+      setDisplayValue(userProvidedText);
       if (onChange) {
         onChange({
           userProvidedText: userProvidedText,
@@ -255,7 +283,7 @@ function FormAutosuggest({
   };
 
   const updateErrorStateAndErrorMessage = () => {
-    debugger;
+    // debugger;
     if (customError) {
       setIsValid(false);
       setErrorMessage(customErrorMessageText);
@@ -302,7 +330,7 @@ function FormAutosuggest({
           aria-invalid={errorMessage}
           aria-activedescendant={activeMenuItemId}
           onChange={handleTextInput}
-          onClick={handleClick}
+          onClick={handleTextboxClick}
           trailingElement={iconToggle}
           data-testid="autosuggest-textbox-input"
           {...controlProps}
@@ -320,23 +348,7 @@ function FormAutosuggest({
           </FormControlFeedback>
         )}
       </FormGroupContextProvider>
-
-      <ul
-        id="pgn__form-autosuggest__dropdown-box"
-        className="pgn__form-autosuggest__dropdown"
-        role="listbox"
-      >
-        {isLoading ? (
-          <div className="pgn__form-autosuggest__dropdown-loading">
-            <Spinner
-              animation="border"
-              variant="dark"
-              screenReaderText={screenReaderText}
-              data-testid="autosuggest-loading-spinner"
-            />
-          </div>
-        ) : dropdownItems.length > 0 && dropdownItems}
-      </ul>
+      <FormAutosuggestDropdown isLoading={isLoading} dropdownItems={dropdownItems} loadingSpinnerScreenReaderText={screenReaderText} />
     </div>
   );
 }
