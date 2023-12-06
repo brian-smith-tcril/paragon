@@ -47,6 +47,8 @@ function FormAutosuggest({
   const [displayValue, setDisplayValue] = useState(value || '');
   const [dropdownItems, setDropdownItems] = useState([]);
   const [activeMenuItemId, setActiveMenuItemId] = useState(null);
+  const [isValid, setIsValid] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleMenuItemFocus = (menuItemId) => {
     setActiveMenuItemId(menuItemId);
@@ -56,16 +58,17 @@ function FormAutosuggest({
     const clickedValue = e.currentTarget.getAttribute('data-value');
     const clickedId = e.currentTarget.id;
 
-    debugger;
+    if (onChange && clickedValue !== value.selectionValue) {
+      onChange({
+        userProvidedText: userProvidedText,
+        selectionValue: '',
+        selectionId: ''
+      });
+    }
+
     if (onSelected && clickedValue !== value) {
       onSelected(clickedValue);
     }
-
-    setState(prevState => ({
-      ...prevState,
-      dropDownItems: [],
-      displayValue: clickedValue,
-    }));
 
     setIsMenuClosed(true);
 
@@ -133,8 +136,16 @@ function FormAutosuggest({
     />
   );
 
+  const enterControl = () => {
+    console.log('onFocus');
+  }
+
   const leaveControl = () => {
-    // setIsActive(false);
+    console.log('onBlur');
+    setIsActive(false);
+    setIsMenuClosed(true);
+    updateErrorStateAndErrorMessage();
+    
 
     // setState(prevState => ({
     //   ...prevState,
@@ -142,13 +153,7 @@ function FormAutosuggest({
     //   errorMessage: !state.displayValue ? errorMessageText : '',
     // }));
 
-    // setIsMenuClosed(true);
-  };
-
-  const handleDocumentClick = (e) => {
-    if (parentRef.current && !parentRef.current.contains(e.target) && isActive) {
-      leaveControl();
-    }
+    
   };
 
   const keyDownHandler = e => {
@@ -173,10 +178,8 @@ function FormAutosuggest({
 
   useEffect(() => {
     document.addEventListener('keydown', keyDownHandler);
-    document.addEventListener('click', handleDocumentClick, true);
 
     return () => {
-      document.removeEventListener('click', handleDocumentClick, true);
       document.removeEventListener('keydown', keyDownHandler);
     };
   });
@@ -251,49 +254,42 @@ function FormAutosuggest({
     }
   };
 
-  const isInvalid = () => {
+  const updateErrorStateAndErrorMessage = () => {
+    debugger;
     if (customError) {
-      return true;
+      setIsValid(false);
+      setErrorMessage(customErrorMessageText);
+      return;
     }
 
     if (valueRequired && !hasValue) {
-      return true;
+      setIsValid(false);
+      setErrorMessage(valueRequiredErrorMessageText);
+      return;
     }
 
     if (selectionRequired && !hasSelection) {
-      return true;
+      setIsValid(false);
+      setErrorMessage(selectionRequiredErrorMessageText);
+      return;
     }
 
-    return false;
-  }
-
-  const errorMessage = () => {
-    if (customError) {
-      return customErrorMessageText;
-    }
-
-    if (valueRequired && !hasValue) {
-      return valueRequiredErrorMessageText;
-    }
-
-    if (selectionRequired && !hasSelection) {
-      return selectionRequiredErrorMessageText;
-    }
-
-    return '';
+    setIsValid(true);
+    setErrorMessage('');
   }
 
   const { getControlProps } = useFormGroupContext();
   const controlProps = getControlProps(props);
 
   return (
-    <div className="pgn__form-autosuggest__wrapper" ref={parentRef}>
+    <div className="pgn__form-autosuggest__wrapper" ref={parentRef} onFocus={enterControl}
+    onBlur={leaveControl}>
       <div aria-live="assertive" className="sr-only" data-testid="autosuggest-screen-reader-options-count">
         {`${dropdownItems.length} options found`}
       </div>
       <FormGroupContextProvider
         controlId={controlProps.id}
-        isInvalid={isInvalid()}
+        isInvalid={!isValid}
       >
         <FormControl
           ref={formControlRef}
@@ -303,7 +299,7 @@ function FormAutosuggest({
           aria-autocomplete="list"
           autoComplete="off"
           value={displayValue}
-          aria-invalid={errorMessage()}
+          aria-invalid={errorMessage}
           aria-activedescendant={activeMenuItemId}
           onChange={handleTextInput}
           onClick={handleClick}
@@ -312,15 +308,15 @@ function FormAutosuggest({
           {...controlProps}
         />
 
-        {helpMessage && !isInvalid() && (
+        {helpMessage && isValid && (
           <FormControlFeedback type="default">
             {helpMessage}
           </FormControlFeedback>
         )}
 
-        {isInvalid() && (
+        {!isValid && (
           <FormControlFeedback type="invalid" feedback-for={controlProps.name}>
-            {errorMessage()}
+            {errorMessage}
           </FormControlFeedback>
         )}
       </FormGroupContextProvider>
@@ -388,7 +384,11 @@ FormAutosuggest.propTypes = {
   /** Specifies the placeholder text for the input. */
   placeholder: PropTypes.string,
   /** Specifies values for the input. */
-  value: PropTypes.string,
+  value: PropTypes.shape({
+    userProvidedText: PropTypes.string,
+    selectionValue: PropTypes.string,
+    selectionId: PropTypes.string
+  }),
   /** Specifies if empty values trigger an error state */
   valueRequired: PropTypes.bool,
   /** Informs user they must input a value. */
