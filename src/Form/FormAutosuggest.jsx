@@ -25,7 +25,6 @@ function FormAutosuggest({
   valueRequiredErrorMessageText,
   selectionRequired,
   selectionRequiredErrorMessageText,
-  customInvalid,
   customError,
   customErrorMessageText,
   onChange,
@@ -52,6 +51,11 @@ function FormAutosuggest({
     setActiveMenuItemId(menuItemId);
   };
 
+  const collapseDropdown = () => {
+    setDropdownItems([]);
+    setDropdownExpanded(false);
+  };
+
   const handleItemSelect = (e, onClick) => {
     const selectedValue = e.currentTarget.getAttribute('data-value');
     const selectedId = e.currentTarget.id;
@@ -62,9 +66,9 @@ function FormAutosuggest({
 
     if (onChange && selectedValue !== value.selectionValue) {
       onChange({
-        userProvidedText: userProvidedText,
+        userProvidedText: selectedValue,
         selectionValue: selectedValue,
-        selectionId: selectedId
+        selectionId: selectedId,
       });
     }
 
@@ -99,20 +103,19 @@ function FormAutosuggest({
     return childrenOpt;
   }
 
-  const collapseDropdown = () => {
-    setDropdownItems([]);
-    setDropdownExpanded(false);
-  }
-
   const expandDropdown = () => {
     setDropdownItems(getItems(displayValue));
     setIsValid(true);
     setErrorMessage('');
     setDropdownExpanded(true);
-  }
+  };
 
   const toggleDropdown = () => {
-    dropdownExpanded ? collapseDropdown() : expandDropdown();
+    if (dropdownExpanded) {
+      collapseDropdown();
+    } else {
+      expandDropdown();
+    }
   };
 
   const iconToggle = (
@@ -133,9 +136,9 @@ function FormAutosuggest({
 
   const enterControl = () => {
     setIsActive(true);
-  }
+  };
 
-  const leaveControl = (e) => {
+  const leaveControl = () => {
     setIsActive(false);
     collapseDropdown();
     updateErrorStateAndErrorMessage();
@@ -201,7 +204,7 @@ function FormAutosuggest({
         onChange({
           userProvidedText: '',
           selectionValue: '',
-          selectionId: ''
+          selectionId: '',
         });
       }
       return;
@@ -211,7 +214,7 @@ function FormAutosuggest({
 
     const filteredItems = getItems(userProvidedText);
     setDropdownItems(filteredItems);
-    // expandDropdown();    
+    // expandDropdown();
 
     const matchingDropdownItem = filteredItems.find((o) => o.props.children.toLowerCase() === userProvidedText.toLowerCase());
     if (!matchingDropdownItem) {
@@ -219,9 +222,9 @@ function FormAutosuggest({
       setDisplayValue(userProvidedText);
       if (onChange) {
         onChange({
-          userProvidedText: userProvidedText,
+          userProvidedText,
           selectionValue: '',
-          selectionId: ''
+          selectionId: '',
         });
       }
       return;
@@ -232,9 +235,9 @@ function FormAutosuggest({
     setDisplayValue(matchingDropdownItem.props.children);
     if (onChange) {
       onChange({
-        userProvidedText: userProvidedText,
+        userProvidedText,
         selectionValue: matchingDropdownItem.props.children,
-        selectionId: matchingDropdownItem.props.id
+        selectionId: matchingDropdownItem.props.id,
       });
     }
   };
@@ -261,7 +264,7 @@ function FormAutosuggest({
 
     setIsValid(true);
     setErrorMessage('');
-  }
+  };
 
   const { getControlProps } = useFormGroupContext();
   const controlProps = getControlProps(props);
@@ -305,21 +308,21 @@ function FormAutosuggest({
         )}
       </FormGroupContextProvider>
       <ul
-    id="pgn__form-autosuggest__dropdown-box"
-    className="pgn__form-autosuggest__dropdown"
-    role="listbox"
-  >
-    {isLoading ? (
-      <div className="pgn__form-autosuggest__dropdown-loading">
-        <Spinner
-          animation="border"
-          variant="dark"
-          screenReaderText={screenReaderText}
-          data-testid="autosuggest-loading-spinner"
-        />
-      </div>
-    ) : dropdownItems.length > 0 && dropdownItems}
-  </ul>
+        id="pgn__form-autosuggest__dropdown-box"
+        className="pgn__form-autosuggest__dropdown"
+        role="listbox"
+      >
+        {isLoading ? (
+          <div className="pgn__form-autosuggest__dropdown-loading">
+            <Spinner
+              animation="border"
+              variant="dark"
+              screenReaderText={screenReaderText}
+              data-testid="autosuggest-loading-spinner"
+            />
+          </div>
+        ) : dropdownItems.length > 0 && dropdownItems}
+      </ul>
     </div>
   );
 }
@@ -370,18 +373,18 @@ FormAutosuggest.propTypes = {
   value: PropTypes.shape({
     userProvidedText: PropTypes.string,
     selectionValue: PropTypes.string,
-    selectionId: PropTypes.string
+    selectionId: PropTypes.string,
   }),
   /** Specifies if empty values trigger an error state */
   valueRequired: PropTypes.bool,
   /** Informs user they must input a value. */
   valueRequiredErrorMessageText: PropTypes.string,
   /** Specifies if freeform values trigger an error state */
-  selectionRequired: PropTypes.bool,  
+  selectionRequired: PropTypes.bool,
   /** Informs user they must make a selection. */
   selectionRequiredErrorMessageText: PropTypes.string,
   /** Specifies the control is in a consumer provided error state */
-  customError: PropTypes.bool,  
+  customError: PropTypes.bool,
   /** Informs user of other errors. */
   customErrorMessageText: PropTypes.string,
   /** Specifies the name of the base input element. */
