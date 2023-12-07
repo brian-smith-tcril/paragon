@@ -13,9 +13,6 @@ import IconButton from '../IconButton';
 import Spinner from '../Spinner';
 import useArrowKeyNavigation from '../hooks/useArrowKeyNavigation';
 import messages from './messages';
-import { filter } from 'lodash';
-import { expand } from 'rxjs';
-// import { match } from 'assert';
 
 function FormAutosuggest({
   children,
