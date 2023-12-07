@@ -138,6 +138,29 @@ function FormAutosuggest({
     setIsActive(true);
   };
 
+  const updateErrorStateAndErrorMessage = () => {
+    if (customError) {
+      setIsValid(false);
+      setErrorMessage(customErrorMessageText);
+      return;
+    }
+
+    if (valueRequired && !hasValue) {
+      setIsValid(false);
+      setErrorMessage(valueRequiredErrorMessageText);
+      return;
+    }
+
+    if (selectionRequired && !hasSelection) {
+      setIsValid(false);
+      setErrorMessage(selectionRequiredErrorMessageText);
+      return;
+    }
+
+    setIsValid(true);
+    setErrorMessage('');
+  };
+
   const leaveControl = () => {
     setIsActive(false);
     collapseDropdown();
@@ -162,7 +185,6 @@ function FormAutosuggest({
 
     if (e.key === 'Tab') {
       leaveControl();
-      return;
     }
   };
 
@@ -189,7 +211,7 @@ function FormAutosuggest({
     }
   }, [value]);
 
-  const handleTextboxClick = (e) => {
+  const handleTextboxClick = () => {
     expandDropdown();
   };
 
@@ -218,7 +240,9 @@ function FormAutosuggest({
     setDropdownItems(filteredItems);
     // expandDropdown();
 
-    const matchingDropdownItem = filteredItems.find((o) => o.props.children.toLowerCase() === userProvidedText.toLowerCase());
+    const matchingDropdownItem = filteredItems.find((o) => (
+      o.props.children.toLowerCase() === userProvidedText.toLowerCase()
+    ));
     if (!matchingDropdownItem) {
       setHasSelection(false);
       setDisplayValue(userProvidedText);
@@ -242,30 +266,6 @@ function FormAutosuggest({
         selectionId: matchingDropdownItem.props.id,
       });
     }
-  };
-
-  const updateErrorStateAndErrorMessage = () => {
-    // debugger;
-    if (customError) {
-      setIsValid(false);
-      setErrorMessage(customErrorMessageText);
-      return;
-    }
-
-    if (valueRequired && !hasValue) {
-      setIsValid(false);
-      setErrorMessage(valueRequiredErrorMessageText);
-      return;
-    }
-
-    if (selectionRequired && !hasSelection) {
-      setIsValid(false);
-      setErrorMessage(selectionRequiredErrorMessageText);
-      return;
-    }
-
-    setIsValid(true);
-    setErrorMessage('');
   };
 
   const { getControlProps } = useFormGroupContext();
@@ -336,7 +336,6 @@ FormAutosuggest.defaultProps = {
   className: null,
   floatingLabel: null,
   onChange: null,
-  onSelected: null,
   helpMessage: '',
   placeholder: '',
   value: null,
@@ -344,6 +343,7 @@ FormAutosuggest.defaultProps = {
   valueRequiredErrorMessageText: null,
   selectionRequired: false,
   selectionRequiredErrorMessageText: null,
+  customError: false,
   customErrorMessageText: null,
   readOnly: false,
   children: null,
