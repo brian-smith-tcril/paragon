@@ -41,7 +41,13 @@ function FormAutosuggest({
   const [isActive, setIsActive] = useState(false);
   const [hasValue, setHasValue] = useState(false);
   const [hasSelection, setHasSelection] = useState(false);
-  const [displayValue, setDisplayValue] = useState(value || '');
+  const [displayValue, setDisplayValue] = useState(() => {
+    if (!value) {
+      return '';
+    }
+
+    return value.userProvidedText;
+  });
   const [dropdownItems, setDropdownItems] = useState([]);
   const [activeMenuItemId, setActiveMenuItemId] = useState(null);
   const [isValid, setIsValid] = useState(true);
@@ -64,7 +70,7 @@ function FormAutosuggest({
     setHasSelection(true);
     setDisplayValue(selectedValue);
 
-    if (onChange && selectedValue !== value.selectionValue) {
+    if (onChange && (!value || (value && selectedValue !== value.selectionValue))) {
       onChange({
         userProvidedText: selectedValue,
         selectionValue: selectedValue,
@@ -205,10 +211,12 @@ function FormAutosuggest({
   });
 
   useEffect(() => {
-    // debugger;
-    if (value || value === '') {
-      setDisplayValue(value);
+    if (!value) {
+      return;
     }
+
+    setDisplayValue(value.userProvidedText);
+    setHasSelection(!!value.selectionValue);
   }, [value]);
 
   const handleTextboxClick = () => {
@@ -261,7 +269,7 @@ function FormAutosuggest({
     setDisplayValue(matchingDropdownItem.props.children);
     if (onChange) {
       onChange({
-        userProvidedText,
+        userProvidedText: matchingDropdownItem.props.children,
         selectionValue: matchingDropdownItem.props.children,
         selectionId: matchingDropdownItem.props.id,
       });
