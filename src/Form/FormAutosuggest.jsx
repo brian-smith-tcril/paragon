@@ -145,22 +145,24 @@ function FormAutosuggest({
   };
 
   const keyDownHandler = e => {
-    if (e.key === 'Escape' && isActive) {
+    if (!isActive) {
+      return;
+    }
+
+    if (e.key === 'Escape') {
       e.preventDefault();
 
       if (formControlRef) {
         formControlRef.current.focus();
       }
 
-      setState(prevState => ({
-        ...prevState,
-        dropDownItems: [],
-      }));
-
       collapseDropdown();
+      return;
     }
-    if (e.key === 'Tab' && isActive) {
+
+    if (e.key === 'Tab') {
       leaveControl();
+      return;
     }
   };
 
