@@ -108,7 +108,6 @@ function FormAutosuggest({
   }
 
   const expandDropdown = () => {
-    setIsActive(true);
     setDropdownItems(getItems(displayValue));
     setIsValid(true);
     setErrorMessage('');
@@ -136,24 +135,13 @@ function FormAutosuggest({
   );
 
   const enterControl = () => {
-    console.log('onFocus');
+    setIsActive(true);
   }
 
   const leaveControl = (e) => {
-    debugger;
-
     setIsActive(false);
     collapseDropdown();
     updateErrorStateAndErrorMessage();
-    
-
-    // setState(prevState => ({
-    //   ...prevState,
-    //   dropDownItems: [],
-    //   errorMessage: !state.displayValue ? errorMessageText : '',
-    // }));
-
-    
   };
 
   const keyDownHandler = e => {
