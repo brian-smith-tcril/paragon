@@ -90,7 +90,7 @@ describe('render behavior', () => {
   });
 
   it('renders the auto-populated value if it exists', () => {
-    render(<FormAutosuggestWrapper value={{userProvidedText: "Test Value"}} />);
+    render(<FormAutosuggestWrapper value={{ userProvidedText: 'Test Value' }} />);
     expect(screen.getByDisplayValue('Test Value')).toBeInTheDocument();
   });
 
@@ -103,7 +103,7 @@ describe('render behavior', () => {
   });
 
   it('renders with value required error msg', () => {
-    const { getByText, getByTestId } = render(<FormAutosuggestTestComponent valueRequired/>);
+    const { getByText, getByTestId } = render(<FormAutosuggestTestComponent valueRequired />);
     const input = getByTestId('autosuggest-textbox-input');
 
     // if you click into the input and click outside, you should see the error message
@@ -116,7 +116,7 @@ describe('render behavior', () => {
   });
 
   it('renders with selection required error msg', () => {
-    const { getByText, getByTestId } = render(<FormAutosuggestTestComponent selectionRequired/>);
+    const { getByText, getByTestId } = render(<FormAutosuggestTestComponent selectionRequired />);
     const input = getByTestId('autosuggest-textbox-input');
 
     // if you click into the input and click outside, you should see the error message
@@ -129,7 +129,7 @@ describe('render behavior', () => {
   });
 
   it('renders with custom error msg', () => {
-    const { getByText, getByTestId } = render(<FormAutosuggestTestComponent customError/>);
+    const { getByText, getByTestId } = render(<FormAutosuggestTestComponent customError />);
     const input = getByTestId('autosuggest-textbox-input');
 
     // if you click into the input and click outside, you should see the error message
@@ -139,7 +139,7 @@ describe('render behavior', () => {
     const formControlFeedback = getByText('Example custom error message');
 
     expect(formControlFeedback).toBeInTheDocument();
-  });  
+  });
 
   it('renders component with options that all have IDs', () => {
     const { getByTestId, getAllByTestId } = render(<FormAutosuggestTestComponent />);
@@ -196,7 +196,7 @@ describe('controlled behavior', () => {
     const menuItem = getByText('Option 1');
     userEvent.click(menuItem);
 
-    expect(onChange).toHaveBeenCalledWith({selectionId: "option-1-id", selectionValue: "Option 1", userProvidedText: "Option 1"});
+    expect(onChange).toHaveBeenCalledWith({ selectionId: 'option-1-id', selectionValue: 'Option 1', userProvidedText: 'Option 1' });
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
