@@ -17,31 +17,6 @@ import { filter } from 'lodash';
 import { expand } from 'rxjs';
 // import { match } from 'assert';
 
-function FormAutosuggestDropdown({
-  isLoading,
-  dropdownItems,
-  loadingSpinnerScreenReaderText,
-}) {
-  return (
-    <ul
-    id="pgn__form-autosuggest__dropdown-box"
-    className="pgn__form-autosuggest__dropdown"
-    role="listbox"
-  >
-    {isLoading ? (
-      <div className="pgn__form-autosuggest__dropdown-loading">
-        <Spinner
-          animation="border"
-          variant="dark"
-          screenReaderText={loadingSpinnerScreenReaderText}
-          data-testid="autosuggest-loading-spinner"
-        />
-      </div>
-    ) : dropdownItems.length > 0 && dropdownItems}
-  </ul>
-  )
-}
-
 function FormAutosuggest({
   children,
   arrowKeyNavigationSelector,
@@ -66,17 +41,6 @@ function FormAutosuggest({
     selectors: arrowKeyNavigationSelector,
     ignoredKeys: ignoredArrowKeysNames,
   });
-  // const [state, setState] = useState({
-  //   dropdownExpanded: false,
-  //   isActive: false,
-  //   hasValue: false,
-  //   hasSelection: false,
-  //   displayValue: value || '',
-  //   dropdownItems: [],
-  //   activeMenuItemId: null,
-  //   isValid: true,
-  //   errorMessage: '',
-  // });
   const [dropdownExpanded, setDropdownExpanded] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [hasValue, setHasValue] = useState(false);
@@ -91,23 +55,23 @@ function FormAutosuggest({
     setActiveMenuItemId(menuItemId);
   };
 
-  const handleItemClick = (e, onClick) => {
-    const clickedValue = e.currentTarget.getAttribute('data-value');
-    const clickedId = e.currentTarget.id;
+  const handleItemSelect = (e, onClick) => {
+    const selectedValue = e.currentTarget.getAttribute('data-value');
+    const selectedId = e.currentTarget.id;
 
-    if (onChange && clickedValue !== value.selectionValue) {
+    setHasValue(true);
+    setHasSelection(true);
+    setDisplayValue(selectedValue);
+
+    if (onChange && selectedValue !== value.selectionValue) {
       onChange({
         userProvidedText: userProvidedText,
-        selectionValue: '',
-        selectionId: ''
+        selectionValue: selectedValue,
+        selectionId: selectedId
       });
     }
 
-    if (onSelected && clickedValue !== value) {
-      onSelected(clickedValue);
-    }
-
-    setDropdownExpanded(false);
+    collapseDropdown();
 
     if (onClick) {
       onClick(e);
@@ -124,7 +88,7 @@ function FormAutosuggest({
         ...rest,
         children,
         'data-value': children,
-        onClick: (e) => handleItemClick(e, onClick),
+        onClick: (e) => handleItemSelect(e, onClick),
         id: menuItemId,
         onFocus: () => handleMenuItemFocus(menuItemId),
       });
@@ -175,8 +139,9 @@ function FormAutosuggest({
     console.log('onFocus');
   }
 
-  const leaveControl = () => {
-    console.log('onBlur');
+  const leaveControl = (e) => {
+    debugger;
+
     setIsActive(false);
     collapseDropdown();
     updateErrorStateAndErrorMessage();
@@ -211,10 +176,18 @@ function FormAutosuggest({
     }
   };
 
+  const handleDocumentClick = (e) => {
+    if (parentRef.current && !parentRef.current.contains(e.target) && isActive) {
+      leaveControl();
+    }
+  };
+
   useEffect(() => {
     document.addEventListener('keydown', keyDownHandler);
+    document.addEventListener('click', handleDocumentClick, true);
 
     return () => {
+      document.removeEventListener('click', handleDocumentClick, true);
       document.removeEventListener('keydown', keyDownHandler);
     };
   });
@@ -252,9 +225,8 @@ function FormAutosuggest({
     setHasValue(true);
 
     const filteredItems = getItems(userProvidedText);
-    debugger;
     setDropdownItems(filteredItems);
-    expandDropdown();    
+    // expandDropdown();    
 
     const matchingDropdownItem = filteredItems.find((o) => o.props.children.toLowerCase() === userProvidedText.toLowerCase());
     if (!matchingDropdownItem) {
@@ -310,8 +282,7 @@ function FormAutosuggest({
   const controlProps = getControlProps(props);
 
   return (
-    <div className="pgn__form-autosuggest__wrapper" ref={parentRef} onFocus={enterControl}
-    onBlur={leaveControl}>
+    <div className="pgn__form-autosuggest__wrapper" ref={parentRef} onFocus={enterControl}>
       <div aria-live="assertive" className="sr-only" data-testid="autosuggest-screen-reader-options-count">
         {`${dropdownItems.length} options found`}
       </div>
@@ -348,7 +319,22 @@ function FormAutosuggest({
           </FormControlFeedback>
         )}
       </FormGroupContextProvider>
-      <FormAutosuggestDropdown isLoading={isLoading} dropdownItems={dropdownItems} loadingSpinnerScreenReaderText={screenReaderText} />
+      <ul
+    id="pgn__form-autosuggest__dropdown-box"
+    className="pgn__form-autosuggest__dropdown"
+    role="listbox"
+  >
+    {isLoading ? (
+      <div className="pgn__form-autosuggest__dropdown-loading">
+        <Spinner
+          animation="border"
+          variant="dark"
+          screenReaderText={screenReaderText}
+          data-testid="autosuggest-loading-spinner"
+        />
+      </div>
+    ) : dropdownItems.length > 0 && dropdownItems}
+  </ul>
     </div>
   );
 }
