@@ -75,7 +75,7 @@ function getPackageInfo(dir, options = {}) {
     return {
       version,
       name,
-      repository,
+      repository: repository.url ? repository : {type: "git", url: repository},
       folderName: dir.split('/').pop(),
     };
   } catch (e) {
