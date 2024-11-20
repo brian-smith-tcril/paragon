@@ -1,16 +1,7 @@
 import React from 'react';
-import BaseCard from 'react-bootstrap/Card';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import CardContext, { CardContextProvider } from './CardContext';
-import CardHeader from './CardHeader';
-import CardDivider from './CardDivider';
-import CardSection from './CardSection';
-import CardFooter from './CardFooter';
-import CardImageCap from './CardImageCap';
-import CardBody from './CardBody';
-import CardStatus from './CardStatus';
-import withDeprecatedProps, { DeprTypes } from '../withDeprecatedProps';
+import { CardContextProvider } from './CardContext';
 
 export const CARD_VARIANTS = ['light', 'dark', 'muted'];
 
@@ -19,25 +10,36 @@ const Card = React.forwardRef(({
   isLoading,
   className,
   isClickable,
-  muted,
   variant,
+  bg,
+  text,
+  border,
+  // as,
   ...props
 }, ref) => {
-  const resolvedVariant = muted ? 'muted' : variant;
+  const Component = 'div';
 
   return (
     <CardContextProvider
       orientation={orientation}
       isLoading={isLoading}
-      variant={resolvedVariant}
+      variant={variant}
     >
-      <BaseCard
+      <Component
         {...props}
-        className={classNames(className, 'pgn__card', {
-          horizontal: orientation === 'horizontal',
-          clickable: isClickable,
-          [`pgn__card-${resolvedVariant}`]: resolvedVariant,
-        })}
+        className={classNames(
+          className,
+          'pgn__card',
+          'card',
+          bg && `bg-${bg}`,
+          text && `text-${text}`,
+          border && `border-${border}`,
+          {
+            horizontal: orientation === 'horizontal',
+            clickable: isClickable,
+            [`pgn__card-${variant}`]: variant,
+          },
+        )}
         ref={ref}
         tabIndex={isClickable ? 0 : -1}
       />
@@ -63,33 +65,25 @@ Card.propTypes = {
   isLoading: PropTypes.bool,
   /** Specifies `Card` style variant. */
   variant: PropTypes.oneOf(CARD_VARIANTS),
-  /** **Deprecated**. Specifies whether `Card` uses `muted` variant. Use `variant="muted"` instead. */
-  muted: PropTypes.bool,
+  /** Sets card background */
+  bg: PropTypes.oneOf(['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'dark', 'light']),
+  /** Sets card text color */
+  text: PropTypes.oneOf(['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'dark', 'light', 'white', 'muted']),
+  /** Sets card border color */
+  border: PropTypes.oneOf(['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'dark', 'light']),
+  // as: PropTypes.oneOfType([PropTypes.string, PropTypes.elementType]),
 };
 
 Card.defaultProps = {
-  ...BaseCard.defaultProps,
   className: undefined,
   orientation: 'vertical',
   isClickable: false,
   variant: 'light',
   isLoading: false,
+  // as: 'div',
+  bg: undefined,
+  text: undefined,
+  border: undefined,
 };
 
-const CardWithDeprecatedProp = withDeprecatedProps(Card, 'Card', {
-  muted: {
-    deprType: DeprTypes.REMOVED,
-    message: 'Use "variant" prop instead, i.e. variant="muted"',
-  },
-});
-
-CardWithDeprecatedProp.Status = CardStatus;
-CardWithDeprecatedProp.Header = CardHeader;
-CardWithDeprecatedProp.Divider = CardDivider;
-CardWithDeprecatedProp.Section = CardSection;
-CardWithDeprecatedProp.Footer = CardFooter;
-CardWithDeprecatedProp.ImageCap = CardImageCap;
-CardWithDeprecatedProp.Context = CardContext;
-CardWithDeprecatedProp.Body = CardBody;
-
-export default CardWithDeprecatedProp;
+export default Card;
