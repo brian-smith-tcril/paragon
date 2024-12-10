@@ -9,7 +9,7 @@ const DEFAULT_TRUNCATE_LINES = 1;
 const DEFAULT_TRUNCATE_ELLIPSIS = '...';
 const DEFAULT_TRUNCATE_ELEMENT_TYPE = 'div';
 
-function Truncate({
+function TruncateDeprecated({
   children, lines, ellipsis, elementType, className, whiteSpace, onTruncate,
 }) {
   const textContainer = useRef();
@@ -40,7 +40,7 @@ function Truncate({
   });
 }
 
-Truncate.propTypes = {
+TruncateDeprecated.propTypes = {
   /** The expected text to which the ellipsis would be applied. */
   children: PropTypes.string.isRequired,
   /** The number of lines the text to be truncated to. */
@@ -57,7 +57,7 @@ Truncate.propTypes = {
   onTruncate: PropTypes.func,
 };
 
-Truncate.defaultProps = {
+TruncateDeprecated.defaultProps = {
   lines: DEFAULT_TRUNCATE_LINES,
   ellipsis: DEFAULT_TRUNCATE_ELLIPSIS,
   whiteSpace: false,
@@ -65,5 +65,10 @@ Truncate.defaultProps = {
   className: undefined,
   onTruncate: undefined,
 };
+
+function Truncate() {
+  return null;
+}
+Truncate.Deprecated = TruncateDeprecated;
 
 export default Truncate;
