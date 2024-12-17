@@ -32,6 +32,8 @@ export interface IPageTemplateType {
 }
 
 export default function PageTemplate({ children, pageContext }: IPageTemplateType) {
+  console.log(children)
+  console.log(pageContext)
   const { settings } = useContext(SettingsContext);
 
   return (
