@@ -33,6 +33,7 @@
     "lint": "npm run stylelint && eslint --ext .js --ext .jsx --ext .ts --ext .tsx . && npm run lint --workspaces --if-present",
     "prepublishOnly": "npm run build",
     "semantic-release": "semantic-release",
+    "serve-docs": "npm run serve --workspace=www",
     "snapshot": "jest --updateSnapshot",
     "start": "npm start --workspace=www",
     "test": "jest --coverage",
