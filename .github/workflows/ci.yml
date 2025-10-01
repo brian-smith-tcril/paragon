@@ -24,4 +24,6 @@ jobs:
     - name: Install dependencies
       run: npm ci
     - name: Build Docs
-      run: npm run build-docs
+      # npm swallows errors when using npm run build-docs
+      # see https://github.com/openedx/paragon/issues/3329
+      run: npm run build --workspace=www
