@@ -2,7 +2,7 @@ import React, {
   useEffect, useMemo, useReducer,
 } from 'react';
 import PropTypes from 'prop-types';
-import { useTable, useMountedLayoutEffect } from 'react-table';
+import { useTable, useMountedLayoutEffect, useAsyncDebounce } from 'react-table';
 
 import classNames from 'classnames';
 import Table from './Table';
@@ -58,6 +58,7 @@ function DataTable({
   onSelectedRowsChanged,
   maxSelectedRows,
   onMaxSelectedRows,
+  fetchDataDebounceMilliseconds,
   ...props
 }) {
   const defaultColumn = useMemo(
@@ -171,16 +172,24 @@ function DataTable({
     selectedRowIds: tableStateSelectedRowIds,
   } = instance.state;
 
+  // This is following the example from
+  // https://github.com/TanStack/table/blob/v7/docs/src/pages/docs/faq.md#how-can-i-debounce-rapid-table-state-changes
+  const fetchDataDebounced = useAsyncDebounce(({pageSize, pageIndex, sortBy, filters}) => fetchData(
+    pageSize, pageIndex, sortBy, filters
+  ), fetchDataDebounceMilliseconds);
+
   useEffect(() => {
-    if (fetchData) {
-      fetchData({
-        pageSize: tableStatePageSize,
-        pageIndex: tableStatePageIndex,
-        sortBy: tableStateSortBy,
-        filters: tableStateFilters,
-      });
+    if (!fetchData) {
+      return;
     }
-  }, [fetchData, tableStatePageSize, tableStatePageIndex, tableStateSortBy, tableStateFilters]);
+
+    fetchDataDebounced({
+      pageSize: tableStatePageSize,
+      pageIndex: tableStatePageIndex,
+      sortBy: tableStateSortBy,
+      filters: tableStateFilters,
+    });
+  }, [fetchDataDebounced, tableStatePageSize, tableStatePageIndex, tableStateSortBy, tableStateFilters]);
 
   useMountedLayoutEffect(() => {
     if (onSelectedRowsChanged) {
@@ -255,6 +264,7 @@ DataTable.defaultProps = {
   manualPagination: false,
   manualSortBy: false,
   fetchData: null,
+  fetchDataDebounceMilliseconds: 0,
   initialState: {},
   initialTableOptions: {},
   EmptyTableComponent: EmptyTableContent,
@@ -347,6 +357,8 @@ DataTable.propTypes = {
   /** Function that will fetch table data. Called when page size, page index or filters change.
    * Meant to be used with manual filters and pagination */
   fetchData: PropTypes.func,
+  /** Debounce (in ms) to use for fetchData using react-table's internal `useAsyncDebounce` */
+  fetchDataDebounceMilliseconds: PropTypes.number,
   /** Initial state passed to react-table's documentation https://github.com/TanStack/table/blob/v7/docs/src/pages/docs/api/useTable.md */
   initialState: PropTypes.shape({
     pageSize: requiredWhen(PropTypes.number, 'isPaginated'),
